@@ -1,15 +1,35 @@
+const path = require('path');
+const dotenv = require('dotenv');
+
+// Log the current directory and .env file path
+console.log('Current directory:', process.cwd());
+console.log('Looking for .env file at:', path.join(process.cwd(), '.env'));
+
+// Load environment variables from the current directory
+const result = dotenv.config({ path: path.join(process.cwd(), '.env') });
+if (result.error) {
+    console.error('Error loading .env file:', result.error);
+    process.exit(1);
+}
+
 const express = require('express');
 const session = require('express-session');
 const cors = require('cors');
 const { auth } = require('express-oauth2-jwt-bearer');
+
+// Debug logging for environment variables
+console.log('\nEnvironment variables loaded:');
+console.log('AUTH0_AUDIENCE:', process.env.AUTH0_AUDIENCE);
+console.log('AUTH0_ISSUER_BASE_URL:', process.env.AUTH0_ISSUER_BASE_URL);
+console.log('SESSION_SECRET:', process.env.SESSION_SECRET);
 
 const app = express();
 const PORT = 5000;
 
 // Auth0 configuration
 const checkJwt = auth({
-    audience: 'https://dev-31su72tgkfym01db.us.auth0.com/api/v2/', // The identifier of your API
-    issuerBaseURL: 'https://dev-31su72tgkfym01db.us.auth0.com/',
+    audience: process.env.AUTH0_AUDIENCE,
+    issuerBaseURL: process.env.AUTH0_ISSUER_BASE_URL,
     tokenSigningAlg: 'RS256'
 });
 
@@ -20,7 +40,7 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(session({
-    secret: 'your-secret-key',
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {
