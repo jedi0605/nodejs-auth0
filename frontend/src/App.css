@@ -48,4 +48,25 @@ button:hover {
 h1 {
   color: #333;
   margin-bottom: 20px;
+}
+
+.login-method-selector {
+  margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.login-method-selector button {
+  padding: 8px 16px;
+  border: 1px solid #ccc;
+  background: white;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.login-method-selector button.active {
+  background: #007bff;
+  color: white;
+  border-color: #0056b3;
 } 

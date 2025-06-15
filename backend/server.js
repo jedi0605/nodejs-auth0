@@ -33,7 +33,7 @@ const users = [
         email: 'user@example.com',
         password: 'user123',
         role: 'user',
-        internal: false
+        internal: true
     },
     {
         email: 'user2@example.com',
@@ -43,11 +43,11 @@ const users = [
     }
 ];
 
-// Routes
+// Traditional login endpoint
 app.post('/api/login', (req, res) => {
     const { email, password } = req.body;
     
-    const user = users.find(u => u.email === email);
+    const user = users.find(u => u.email === email && u.internal);
     if (!user) {
         return res.status(401).json({ message: 'Invalid credentials' });
     }
@@ -59,11 +59,43 @@ app.post('/api/login', (req, res) => {
     // Store user info in session including role
     req.session.user = { 
         email: user.email,
-        role: user.role
+        role: user.role,
+        isInternal: true
     };
     
     res.json({ 
         message: 'Logged in successfully',
+        role: user.role
+    });
+});
+
+// Auth0 verification endpoint
+app.post('/api/verify-auth0', (req, res) => {
+    const { email, sub } = req.body;
+    
+    // Check if user exists in our system
+    let user = users.find(u => u.email === email);
+    
+    // If user doesn't exist, create a new external user
+    if (!user) {
+        user = {
+            email: email,
+            role: 'auth0user',
+            internal: false
+        };
+        users.push(user);
+    }
+
+    // Store user info in session including role
+    req.session.user = { 
+        email: user.email,
+        role: user.role,
+        auth0Sub: sub,
+        isInternal: false
+    };
+    
+    res.json({ 
+        message: 'Verified successfully',
         role: user.role
     });
 });
@@ -74,7 +106,8 @@ app.get('/api/check-auth', (req, res) => {
             authenticated: true, 
             user: {
                 email: req.session.user.email,
-                role: req.session.user.role
+                role: req.session.user.role,
+                isInternal: req.session.user.isInternal
             }
         });
     } else {
