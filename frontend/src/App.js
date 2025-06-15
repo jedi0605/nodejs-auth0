@@ -4,7 +4,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import './App.css';
 
 function App() {
-  const { isAuthenticated: isAuth0Authenticated, user: auth0User, loginWithRedirect, logout: auth0Logout } = useAuth0();
+  const { isAuthenticated: isAuth0Authenticated, user: auth0User, loginWithRedirect, logout: auth0Logout, getAccessTokenSilently } = useAuth0();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userEmail, setUserEmail] = useState('');
   const [userRole, setUserRole] = useState('');
@@ -56,11 +56,15 @@ function App() {
 
   const verifyAuth0WithBackend = async () => {
     try {
+      const token = await getAccessTokenSilently();
       const response = await axios.post('http://localhost:5000/api/verify-auth0', {
         email: auth0User.email,
         sub: auth0User.sub
       }, {
-        withCredentials: true
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       });
       
       setIsAuthenticated(true);

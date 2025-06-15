@@ -1,9 +1,17 @@
 const express = require('express');
 const session = require('express-session');
 const cors = require('cors');
+const { auth } = require('express-oauth2-jwt-bearer');
 
 const app = express();
 const PORT = 5000;
+
+// Auth0 configuration
+const checkJwt = auth({
+    audience: 'https://dev-31su72tgkfym01db.us.auth0.com/api/v2/', // The identifier of your API
+    issuerBaseURL: 'https://dev-31su72tgkfym01db.us.auth0.com/',
+    tokenSigningAlg: 'RS256'
+});
 
 // Middleware
 app.use(cors({
@@ -70,9 +78,17 @@ app.post('/api/login', (req, res) => {
 });
 
 // Auth0 verification endpoint
-app.post('/api/verify-auth0', (req, res) => {
+app.post('/api/verify-auth0', checkJwt, (req, res) => {
     const { email, sub } = req.body;
     
+    // Log the token payload to see its structure
+    console.log('Auth0 Token Payload:', req.auth.payload);
+    
+    // The email might be in a different field, let's check sub instead
+    if (req.auth.payload.sub !== sub) {
+        return res.status(401).json({ message: 'Invalid token' });
+    }
+
     // Check if user exists in our system
     let user = users.find(u => u.email === email);
     
