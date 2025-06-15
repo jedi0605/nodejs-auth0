@@ -5,6 +5,7 @@ import './App.css';
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userEmail, setUserEmail] = useState('');
+  const [userRole, setUserRole] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -21,6 +22,7 @@ function App() {
       setIsAuthenticated(response.data.authenticated);
       if (response.data.user) {
         setUserEmail(response.data.user.email);
+        setUserRole(response.data.user.role || 'user'); // Default to 'user' if no role specified
       }
     } catch (err) {
       console.error('Auth check failed:', err);
@@ -36,6 +38,7 @@ function App() {
       );
       setIsAuthenticated(true);
       setUserEmail(email);
+      setUserRole(response.data.role || 'user');
       setError('');
     } catch (err) {
       setError('Invalid credentials');
@@ -49,6 +52,7 @@ function App() {
       });
       setIsAuthenticated(false);
       setUserEmail('');
+      setUserRole('');
     } catch (err) {
       console.error('Logout failed:', err);
     }
@@ -59,6 +63,14 @@ function App() {
       <div className="App">
         <h1>Welcome!</h1>
         <p>You are logged in as: <strong>{userEmail}</strong></p>
+        <p>Role: <strong>{userRole}</strong></p>
+        {userRole === 'admin' && (
+          <div className="admin-section">
+            <h2>Admin Dashboard</h2>
+            <p>This content is only visible to administrators.</p>
+            {/* Add admin-specific features here */}
+          </div>
+        )}
         <button onClick={handleLogout}>Logout</button>
       </div>
     );

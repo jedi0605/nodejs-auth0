@@ -21,11 +21,25 @@ app.use(session({
     }
 }));
 
-// Hardcoded user data with plain password
+// Hardcoded user data with roles
 const users = [
     {
-        email: 'test@example.com',
-        password: 'password123'
+        email: 'admin@example.com',
+        password: 'admin123',
+        role: 'admin',
+        internal: true
+    },
+    {
+        email: 'user@example.com',
+        password: 'user123',
+        role: 'user',
+        internal: false
+    },
+    {
+        email: 'user2@example.com',
+        password: 'user123',
+        role: 'user',
+        internal: true
     }
 ];
 
@@ -42,13 +56,27 @@ app.post('/api/login', (req, res) => {
         return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    req.session.user = { email: user.email };
-    res.json({ message: 'Logged in successfully' });
+    // Store user info in session including role
+    req.session.user = { 
+        email: user.email,
+        role: user.role
+    };
+    
+    res.json({ 
+        message: 'Logged in successfully',
+        role: user.role
+    });
 });
 
 app.get('/api/check-auth', (req, res) => {
     if (req.session.user) {
-        res.json({ authenticated: true, user: req.session.user });
+        res.json({ 
+            authenticated: true, 
+            user: {
+                email: req.session.user.email,
+                role: req.session.user.role
+            }
+        });
     } else {
         res.json({ authenticated: false });
     }
